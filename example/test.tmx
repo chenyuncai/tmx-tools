@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<tmx version="1.4">
+    <header creationtool="Tmxmall" segtype="sentence" adminlang="zh-CN" srclang="zh-CN" datatype="rtf" creationdate="20170322T084235Z" creationid="TM STUDIO"/>
+    <body>
+        <tu creationdate="20170322T084235Z" creationid="TM STUDIO">
+            <tuv xml:lang="zh-CN">
+                <seg>边界取值分析</seg>
+            </tuv>
+            <tuv xml:lang="en-US">
+                <seg>llllll<p>Boundary Value Analysis</p>kkkkkk</seg>
+            </tuv>
+        </tu>
+        <tu creationdate="20 170322T084235Z" creationid="TM STUDIO">
+            <tuv xml:lang="zh-CN">
+                <seg>回归测试</seg>
+            </tuv>
+            <tuv xml:lang="en-US">
+                <seg>Regression Tests</seg>
+            </tuv>
+        </tu>
+        <tu creationdate="20170322T084235Z" creationid="TM STUDIO">
+            <tuv xml:lang="zh-CN">
+                <seg>边界取值分析</seg>
+            </tuv>
+            <tuv xml:lang="en-US">
+                <seg>llllll<p>Boundary Value Analysis</p>kkkkkk</seg>
+            </tuv>
+        </tu>
+        <tu creationdate="20 170322T084235Z" creationid="TM STUDIO">
+            <tuv xml:lang="zh-CN">
+                <seg>回归测试</seg>
+            </tuv>
+            <tuv xml:lang="en-US">
+                <seg>Regression Tests</seg>
+            </tuv>
+        </tu>
+        <tu creationdate="20170322T084235Z" creationid="TM STUDIO">
+            <tuv xml:lang="zh-CN">
+                <seg>边界取值分析</seg>
+            </tuv>
+            <tuv xml:lang="en-US">
+                <seg>llllll<p>Boundary Value Analysis</p>kkkkkk</seg>
+            </tuv>
+        </tu>
+        <tu creationdate="20 170322T084235Z" creationid="TM STUDIO">
+            <tuv xml:lang="zh-CN">
+                <seg>回归测试</seg>
+            </tuv>
+            <tuv xml:lang="en-US">
+                <seg>Regression Tests</seg>
+            </tuv>
+        </tu>
+    </body>
+</tmx>

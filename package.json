@@ -1,0 +1,21 @@
+{
+  "name": "tmx-tools",
+  "version": "1.0.0",
+  "description": "tmx tools collection, like split tmx into files, or count how many tus in the file and so on.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "tmx",
+    "tools",
+    "sax",
+    "parser"
+  ],
+  "author": "Ray Chen",
+  "license": "ISC",
+  "dependencies": {
+    "q": "^1.5.0",
+    "sax": "^1.2.2"
+  }
+}
