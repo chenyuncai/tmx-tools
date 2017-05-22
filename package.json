@@ -1,7 +1,11 @@
 {
   "name": "tmx-tools",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "tmx tools collection, like split tmx into files, or count how many tus in the file and so on.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chenyuncai/tmx-tools.git"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
