@@ -4,6 +4,8 @@ This is an exact tools about dealing with tmx files with sax parser
 We can use this package to count the tu num of a tmx file
 And also split a tmx file into files accroding to your configuraton
 
+We are tring to add some more functibility to make this more effective
+
 ## Install
 
 ```
