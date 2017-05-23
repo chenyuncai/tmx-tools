@@ -153,7 +153,7 @@ module.exports.split = function (options) {
             splitOptions.currentFileTuSize = splitOptions.currentFileTuSize + 1
         } else if(splitOptions.mode == 2){ // 按文件个数分割
             // 如果当前文件大小已经超出平均每个文件大小，且不是最后一个文件，则准备写入到下一个文件，所以最后一个文件的size可能不是准确值
-            if (splitOptions.currentFileSize >= splitOptions.splitEachFileSize && splitOptions.currentFileIndex <= splitOptions.fileNum) {
+            if (splitOptions.currentFileSize >= splitOptions.splitEachFileSize && splitOptions.currentFileIndex < splitOptions.fileNum) {
                 splitOptions.currentFileSize = 0;
                 splitOptions.currentFileIndex = splitOptions.currentFileIndex + 1
             }
