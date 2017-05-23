@@ -3,22 +3,6 @@ let path = require('path')
 let sax = require("sax")
 const Q = require('q');
 
-let instruction = {}
-let tmxTagInfo = {}
-let headerInfo = {}
-let bodyInfo = {}
-
-var xmlInstructionStr = '' // xml info
-var tmxXmlStr = '' // tmx info
-var headerXmlStr = '' // headerInfo 
-var bodyXmlStr = '' // body info
-
-let tmpTU = {};
-
-let chunkSize = 1000; // 每片文件读取大小，读取越小，解析速度越快（原因是因为截取tu时的substring函数，性能瓶颈）
-let deleteCharCount = 0;
-let slice = [];
-
 /**
  * options
  *  srcFilePath
@@ -39,6 +23,22 @@ let slice = [];
  *  })
  */
 module.exports.split = function (options) {
+    let instruction = {}
+    let tmxTagInfo = {}
+    let headerInfo = {}
+    let bodyInfo = {}
+
+    var xmlInstructionStr = '' // xml info
+    var tmxXmlStr = '' // tmx info
+    var headerXmlStr = '' // headerInfo 
+    var bodyXmlStr = '' // body info
+
+    let tmpTU = {};
+
+    let chunkSize = 2000; // 每片文件读取大小，读取越小，解析速度越快（原因是因为截取tu时的substring函数，性能瓶颈）
+    let deleteCharCount = 0;
+    let slice = [];
+
     var deferred = Q.defer();
     var returnRes = {
         fileCount: 0,
@@ -66,6 +66,9 @@ module.exports.split = function (options) {
         currentFileSize: 0,
         splitEachFileSize: 0
     }
+
+    console.log('【Tmx-tools】接收到分割请求：')
+    console.log(JSON.stringify(splitOptions))
 
     // 确保所选文件夹存在
     try {
@@ -135,7 +138,7 @@ module.exports.split = function (options) {
             tuXmlStr = getIntent(2) + slice.join('').substring(tmpTU.segStart - 1 - deleteCharCount, tmpTU.segEnd - deleteCharCount)
         } else {
             // 应该报警，提醒错误，调高slice缓存片数量阀值
-            console.log('')
+            console.log('出现错误了哦，请重新设置level')
         }
 
         // 计算应该存储到哪一个文件
@@ -317,6 +320,3 @@ function writeToFile(url, content, directWrite) {
         fs.appendFileSync(url, content + '\r\n')
     }
 }
-
-
-
