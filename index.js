@@ -62,7 +62,6 @@ module.exports.split = function (options) {
         mode: options.mode || 1,
         fileTuSize: options.fileTuSize || 2000,
         currentFileTuSize: 0,
-
         fileNum: options.fileNum || 10,
         currentFileSize: 0,
         splitEachFileSize: 0
@@ -70,7 +69,7 @@ module.exports.split = function (options) {
 
     // 确保所选文件夹存在
     try {
-        fs.mkdirSync(splitOptions.savePath)    
+        fs.mkdirSync(splitOptions.savePath)
     } catch (error) {}
 
     // 创建解析器，设置处理逻辑
@@ -108,9 +107,6 @@ module.exports.split = function (options) {
         /**
          * 当检测到body时，就开始准备两个文件
          * 1. tu 之前的数据信息，包括 xml, tmx, header and body
-         * 2. 结尾的数据信息
-         *      </body>
-         *  </tmx>
          */
 
         xmlInstructionStr = '<?' + instruction.name + ' ' + instruction.body + '?>';
@@ -160,7 +156,7 @@ module.exports.split = function (options) {
             }
             needHeader = splitOptions.currentFileSize == 0
         }
-        destUrl = path.normalize(path.join(splitOptions.savePath, splitOptions.currentFileIndex + '-' +splitOptions.currentFileName))
+        destUrl = getDestFilePath(splitOptions.currentFileIndex)
         if(needHeader){
             returnRes.fileCount++;
             writeToFile(destUrl, xmlInstructionStr, true) // this is the first time to write conent into the file
@@ -176,14 +172,26 @@ module.exports.split = function (options) {
     }
 
     function tmxEnd () {
+        /**
+         * 结尾的数据信息
+         *      </body>
+         *  </tmx>
+         */
         for (var i = 1; i <= splitOptions.currentFileIndex; i++) {
-        var destUrl = path.normalize(path.join(splitOptions.savePath, i + '-' + splitOptions.currentFileName))
-        writeToFile(destUrl, getIntent(1) + '</body>')
-        writeToFile(destUrl, '</tmx>')
+            var destUrl = getDestFilePath(i)
+            writeToFile(destUrl, getIntent(1) + '</body>')
+            writeToFile(destUrl, '</tmx>')
         }
         var end = new Date().getTime()
         returnRes.time = (end - start)/1000 + 's';
         deferred.resolve(returnRes);
+    }
+
+    function getDestFilePath(index) {
+        var basename = path.basename(splitOptions.currentFileName)
+        var fileNameWithoutExt = basename.substring(0, basename.lastIndexOf(path.extname(basename)))
+        var newNameWithIndexBeforeExt = fileNameWithoutExt + '('+index+')' + path.extname(basename)
+        return path.normalize(path.join(splitOptions.savePath, newNameWithIndexBeforeExt))
     }
 
     /**
