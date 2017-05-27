@@ -46,6 +46,9 @@ module.exports.split = function (options) {
         msg: null
     }
 
+    var tuCount = 0;
+    var spliceCount = 0;
+
     // TODO 检查参数
     if (!fs.existsSync(options.srcFilePath)) {
         returnRes.msg = '文件不存在'
@@ -64,11 +67,12 @@ module.exports.split = function (options) {
         currentFileTuSize: 0,
         fileNum: options.fileNum || 10,
         currentFileSize: 0,
-        splitEachFileSize: 0
+        splitEachFileSize: 0,
+        logger: options.logger
     }
 
-    console.log('【Tmx-tools】接收到分割请求：')
-    console.log(JSON.stringify(splitOptions))
+    logger('【Tmx-tools】接收到分割请求：', splitOptions.logger)
+    logger(JSON.stringify(splitOptions), splitOptions.logger)
 
     // 确保所选文件夹存在
     try {
@@ -127,6 +131,7 @@ module.exports.split = function (options) {
     }
 
     function tuEnd () {
+        logger('当前已解析的tu条数： ' + (tuCount++), splitOptions.logger )
         tmpTU.segEnd = saxStream._parser.position
         /**
          * 需要判断当前的首尾位置，是否在已读的且只存储的缓存字符串范围之内
@@ -135,10 +140,13 @@ module.exports.split = function (options) {
          */
         var tuXmlStr = ''
         if (tmpTU.segStart >= deleteCharCount) {
+
+            // TODO: 待优化，可根据当前位置与标签起始位置关系，手动移除第一片缓存，提高下面substring的计算效率
+
             tuXmlStr = getIntent(2) + slice.join('').substring(tmpTU.segStart - 1 - deleteCharCount, tmpTU.segEnd - deleteCharCount)
         } else {
             // 应该报警，提醒错误，调高slice缓存片数量阀值
-            console.log('出现错误了哦，请重新设置level')
+            logger('出现错误了哦，请重新设置level: options.level = 5(default 5， 1 ~ 10), 你可以设置更大，比如7 ， 9等', splitOptions.logger)
         }
 
         // 计算应该存储到哪一个文件
@@ -183,7 +191,7 @@ module.exports.split = function (options) {
         for (var i = 1; i <= splitOptions.currentFileIndex; i++) {
             var destUrl = getDestFilePath(i)
             writeToFile(destUrl, getIntent(1) + '</body>')
-            writeToFile(destUrl, '</tmx>')
+            writeToFile(destUrl, '</tmx>', false, true)
         }
         var end = new Date().getTime()
         returnRes.time = (end - start)/1000 + 's';
@@ -219,6 +227,7 @@ module.exports.split = function (options) {
             deleteCharCount += deletedStr.length
         }
         slice.push(chunk)
+        logger('当前已解析的文件片数： ' + (spliceCount++), splitOptions.logger )
     })
     .pipe(saxStream)
 
@@ -312,11 +321,37 @@ function getIntent(level) {
     return intentStr;
 }
 
-// 写入内容到文件
-function writeToFile(url, content, directWrite) {
+/**
+ * 
+ * @param {*文件存储路劲} url 
+ * @param {*文件存储内容} content 
+ * @param {*是否直接写入新的文件，避免原来同名的文件已存在} directWrite 
+ */
+var tuCacheMap = {}
+var cacheSize = 50000;
+
+function writeToFile(url, content, directWrite, isLast) {
     if (directWrite) {
         fs.writeFileSync(url, content + '\r\n')
     } else {
-        fs.appendFileSync(url, content + '\r\n')
+        if (!tuCacheMap[url]) {
+            tuCacheMap[url] = []
+        }
+
+        tuCacheMap[url].push(content)
+
+        if ( tuCacheMap[url].length > cacheSize || isLast) {
+            writeCache(url, tuCacheMap[url])
+            tuCacheMap[url] = []
+        }
     }
+}
+
+function writeCache(url, contentList) {
+    fs.appendFileSync(url, contentList.join('\r\n') + '\r\n')
+}
+
+function logger (msg, outLoger) {
+    console.log(msg)
+    outLoger && outLoger(msg)
 }
