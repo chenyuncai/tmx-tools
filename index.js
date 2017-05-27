@@ -131,7 +131,11 @@ module.exports.split = function (options) {
     }
 
     function tuEnd () {
-        logger('当前已解析的tu条数： ' + (tuCount++), splitOptions.logger )
+        tuCount++
+        if (tuCount % 5000 == 0) {
+            logger('当前已解析的tu条数： ' + tuCount, splitOptions.logger )
+        }
+        
         tmpTU.segEnd = saxStream._parser.position
         /**
          * 需要判断当前的首尾位置，是否在已读的且只存储的缓存字符串范围之内
@@ -227,7 +231,10 @@ module.exports.split = function (options) {
             deleteCharCount += deletedStr.length
         }
         slice.push(chunk)
-        logger('当前已解析的文件片数： ' + (spliceCount++), splitOptions.logger )
+        spliceCount++
+        if (spliceCount % 2000 == 0) {
+            logger('当前已解析的文件片数： ' + spliceCount, splitOptions.logger )
+        }
     })
     .pipe(saxStream)
 
@@ -349,6 +356,7 @@ function writeToFile(url, content, directWrite, isLast) {
 
 function writeCache(url, contentList) {
     fs.appendFileSync(url, contentList.join('\r\n') + '\r\n')
+    logger('write into file  >>>>>>   tu num: ' + contentList.length )
 }
 
 function logger (msg, outLoger) {
