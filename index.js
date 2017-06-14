@@ -3,6 +3,10 @@ let path = require('path')
 let sax = require("sax")
 const Q = require('q');
 
+// 写文件时的缓存控制
+var tuCacheMap = {}
+var cacheSize = 50000;
+
 /**
  * options
  *  srcFilePath
@@ -63,13 +67,17 @@ module.exports.split = function (options) {
         currentFileName: path.basename(options.srcFilePath),
         savePath: options.savePath,
         mode: options.mode || 1,
-        fileTuSize: options.fileTuSize || 2000,
+        fileTuSize: options.fileTuSize || 20000,
         currentFileTuSize: 0,
-        fileNum: options.fileNum || 10,
+        fileNum: options.fileNum || 5,
         currentFileSize: 0,
         splitEachFileSize: 0,
         logger: options.logger
     }
+
+    // if (splitOptions.mode == 2) {
+    //     cacheSize = 500
+    // }
 
     logger('【Tmx-tools】接收到分割请求：', splitOptions.logger)
     logger(JSON.stringify(splitOptions), splitOptions.logger)
@@ -334,9 +342,6 @@ function getIntent(level) {
  * @param {*文件存储内容} content 
  * @param {*是否直接写入新的文件，避免原来同名的文件已存在} directWrite 
  */
-var tuCacheMap = {}
-var cacheSize = 50000;
-
 function writeToFile(url, content, directWrite, isLast) {
     if (directWrite) {
         fs.writeFileSync(url, content + '\r\n')
@@ -360,6 +365,9 @@ function writeCache(url, contentList) {
 }
 
 function logger (msg, outLoger) {
-    console.log(msg)
-    outLoger && outLoger(msg)
+    if (outLoger) {
+        outLoger(msg)
+    } else {
+        console.log(msg)
+    }
 }
