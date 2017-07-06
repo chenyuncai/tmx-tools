@@ -93,6 +93,7 @@ module.exports.split = function (options) {
         this._parser.error = null
         this._parser.resume()
     })
+
     saxStream.on("opentag", function (node) {
         var tagName = node.name
         var t = this;
@@ -311,6 +312,9 @@ module.exports.countTU = function (options) {
  */
 
 function _generXmlFromNode (node, level) {
+    if (!node) {
+        return ''
+    }
     var intentStr = getIntent(level)
     var xmlStr = []
     xmlStr.push(intentStr + '<' + node.name)
