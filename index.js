@@ -7,6 +7,7 @@ const Q = require('q');
 // 写文件时的缓存控制
 var tuCacheMap = {}
 var cacheSize = 50000;
+let outLoger = null;
 
 /**
  * options
@@ -75,13 +76,15 @@ module.exports.split = function (options) {
         splitEachFileSize: 0,
         logger: options.logger
     }
+    if (options.logger) {
+        outLoger = options.logger
+    }
 
     // if (splitOptions.mode == 2) {
     //     cacheSize = 500
     // }
 
-    logger('【Tmx-tools】接收到分割请求：', splitOptions.logger)
-    logger(JSON.stringify(splitOptions), splitOptions.logger)
+    logger('【Tmx-tools】接收到分割请求：' + JSON.stringify(splitOptions))
 
     // 确保所选文件夹存在
     try {
@@ -93,6 +96,7 @@ module.exports.split = function (options) {
     saxStream.on("error", function (e) {
         this._parser.error = null
         this._parser.resume()
+        logger('解析出错: ' + e)
     })
 
     saxStream.on("opentag", function (node) {
@@ -143,7 +147,7 @@ module.exports.split = function (options) {
     function tuEnd () {
         tuCount++
         if (tuCount % 5000 == 0) {
-            logger('当前已解析的tu条数： ' + tuCount, splitOptions.logger )
+            logger('当前已解析的tu条数： ' + tuCount)
         }
         
         tmpTU.segEnd = saxStream._parser.position
@@ -160,7 +164,7 @@ module.exports.split = function (options) {
             tuXmlStr = getIntent(2) + slice.join('').substring(tmpTU.segStart - 1 - deleteCharCount, tmpTU.segEnd - deleteCharCount)
         } else {
             // 应该报警，提醒错误，调高slice缓存片数量阀值
-            logger('出现错误了哦，请重新设置level: options.level = 5(default 5， 1 ~ 10), 你可以设置更大，比如7 ， 9等', splitOptions.logger)
+            logger('出现错误了哦，请重新设置level: options.level = 5(default 5， 1 ~ 10), 你可以设置更大，比如7 ， 9等')
         }
 
         // 计算应该存储到哪一个文件
@@ -243,7 +247,7 @@ module.exports.split = function (options) {
         slice.push(chunk)
         spliceCount++
         if (spliceCount % 2000 == 0) {
-            logger('当前已解析的文件片数： ' + spliceCount, splitOptions.logger )
+            logger('当前已解析的文件片数： ' + spliceCount)
         }
     })
     .pipe(utf8())
@@ -373,7 +377,7 @@ function writeCache(url, contentList) {
     logger('write into file  >>>>>>   tu num: ' + contentList.length )
 }
 
-function logger (msg, outLoger) {
+function logger (msg) {
     if (outLoger) {
         outLoger(msg)
     } else {
