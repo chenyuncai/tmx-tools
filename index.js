@@ -1,6 +1,7 @@
 let fs = require('fs')
 let path = require('path')
 let sax = require("sax")
+const utf8 = require('to-utf-8')
 const Q = require('q');
 
 // 写文件时的缓存控制
@@ -230,8 +231,8 @@ module.exports.split = function (options) {
      * 开始读取文件，并以流的形式读取到sax解析器
      */
     fs.createReadStream(splitOptions.srcFilePath, {
-        highWaterMark: chunkSize,
-        encoding: 'UTF-8'
+        highWaterMark: chunkSize
+        // encoding: 'UTF-8'
     })
     .on('data', function(chunk) {
         // 会只保留两块分片备份数据
@@ -245,6 +246,7 @@ module.exports.split = function (options) {
             logger('当前已解析的文件片数： ' + spliceCount, splitOptions.logger )
         }
     })
+    .pipe(utf8())
     .pipe(saxStream)
 
     /**
@@ -300,7 +302,10 @@ module.exports.countTU = function (options) {
         deferred.resolve(returnRes);
     }
 
-    fs.createReadStream(options.srcFilePath, { encoding: 'UTF-8'})
+    fs.createReadStream(options.srcFilePath, { 
+        // encoding: 'UTF-8'
+    })
+    .pipe(utf8())
     .pipe(saxStream)
 
     return deferred.promise;
