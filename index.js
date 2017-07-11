@@ -104,7 +104,7 @@ module.exports.split = function (options) {
         var t = this;
         switch (tagName) {
             case 'tmx': tmxTagInfo = node; break;
-            case 'header': headerInfo = node; break;
+            case 'header': headerStart(node); break;
             case 'body': bodyDeal(node); break;
             case 'tu': tuStart(node); break;
         }
@@ -114,6 +114,7 @@ module.exports.split = function (options) {
         switch (tagName) {
             case 'tu': tuEnd(); break;
             case 'tmx': tmxEnd(); break;
+            case 'header': headerEnd(); break;
         }
     })
 
@@ -124,6 +125,15 @@ module.exports.split = function (options) {
         instruction = introNode
     })
 
+    function headerStart (node) {
+        headerInfo = node
+        headerInfo.start = saxStream._parser.startTagPosition
+        
+    }
+    function headerEnd () {
+        headerInfo.end = saxStream._parser.position
+    }
+
     function bodyDeal (bodyNode) {
         /**
          * 当检测到body时，就开始准备两个文件
@@ -132,7 +142,8 @@ module.exports.split = function (options) {
 
         xmlInstructionStr = '<?' + instruction.name + ' ' + instruction.body + '?>';
         tmxXmlStr = _generXmlFromNode(tmxTagInfo)
-        headerXmlStr = _generXmlFromNode(headerInfo, 1)
+        // headerXmlStr = _generXmlFromNode(headerInfo, 1)
+        headerXmlStr = getIntent(1) + slice.join('').substring(headerInfo.start - 1 - deleteCharCount, headerInfo.end - deleteCharCount)
         bodyXmlStr = _generXmlFromNode(bodyNode, 1)
         if(splitOptions.mode == 2) { // 如果是按文件个数存储，则需要计算每个文件
             var srcFileSize = fs.statSync(splitOptions.srcFilePath).size
