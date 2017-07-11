@@ -238,6 +238,7 @@ module.exports.split = function (options) {
         highWaterMark: chunkSize
         // encoding: 'UTF-8'
     })
+    .pipe(utf8())
     .on('data', function(chunk) {
         // 会只保留两块分片备份数据
         if(slice.length > 3) {
@@ -250,7 +251,6 @@ module.exports.split = function (options) {
             logger('当前已解析的文件片数： ' + spliceCount)
         }
     })
-    .pipe(utf8())
     .pipe(saxStream)
 
     /**
