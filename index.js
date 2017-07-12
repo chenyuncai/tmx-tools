@@ -349,12 +349,7 @@ function _generXmlFromNode (node, level) {
     for (var key in node.attributes) {
         xmlStr.push(key + '="' + node.attributes[key] + '"')
     }
-    if (node.isSelfClosing) {
-        xmlStr.push('/>')
-    } else {
-        xmlStr.push('>')
-    }
-    return xmlStr.join(' ')
+    return xmlStr.join(' ') + (node.isSelfClosing ? '/>':'>')
 }
 
 // 获取缩进
