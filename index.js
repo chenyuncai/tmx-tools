@@ -39,10 +39,14 @@ module.exports.split = function (options) {
     var headerXmlStr = '' // headerInfo 
     var bodyXmlStr = '' // body info
 
-    let tmpTU = {};
+    let tmpTU = {
+        segStart: 0,
+        segEnd: 0
+    };
 
     let chunkSize = 2000; // 每片文件读取大小，读取越小，解析速度越快（原因是因为截取tu时的substring函数，性能瓶颈）
     let deleteCharCount = 0;
+    let cacheStr = ''
     let slice = [];
 
     var deferred = Q.defer();
@@ -51,7 +55,9 @@ module.exports.split = function (options) {
         time: 0,
         msg: null
     }
-
+    if (options.fileTuSize < cacheSize) { // 保证每个文件对应的缓存数量小于单个文件最大条数，防止数据全部保留在缓存
+        cacheSize = options.fileTuSize
+    }
     var tuCount = 0;
     var spliceCount = 0;
 
@@ -157,11 +163,11 @@ module.exports.split = function (options) {
 
     function tuEnd () {
         tuCount++
+        tmpTU.segEnd = saxStream._parser.position
         if (tuCount % 5000 == 0) {
             logger('当前已解析的tu条数： ' + tuCount)
         }
-        
-        tmpTU.segEnd = saxStream._parser.position
+
         /**
          * 需要判断当前的首尾位置，是否在已读的且只存储的缓存字符串范围之内
          * 由于sax解析源是输入文件流，所以尾标签位置一定在范围内
@@ -169,10 +175,8 @@ module.exports.split = function (options) {
          */
         var tuXmlStr = ''
         if (tmpTU.segStart >= deleteCharCount) {
-
             // TODO: 待优化，可根据当前位置与标签起始位置关系，手动移除第一片缓存，提高下面substring的计算效率
-
-            tuXmlStr = getIntent(2) + slice.join('').substring(tmpTU.segStart - 1 - deleteCharCount, tmpTU.segEnd - deleteCharCount)
+            tuXmlStr = getIntent(2) + cacheStr.substring(tmpTU.segStart - 1 - deleteCharCount, tmpTU.segEnd - deleteCharCount)
         } else {
             // 应该报警，提醒错误，调高slice缓存片数量阀值
             logger('出现错误了哦，请重新设置level: options.level = 5(default 5， 1 ~ 10), 你可以设置更大，比如7 ， 9等')
@@ -224,6 +228,7 @@ module.exports.split = function (options) {
         }
         var end = new Date().getTime()
         returnRes.time = (end - start)/1000 + 's';
+        console.log(JSON.stringify(returnRes))
         deferred.resolve(returnRes);
     }
 
@@ -251,16 +256,20 @@ module.exports.split = function (options) {
     })
     .pipe(utf8())
     .on('data', function(chunk) {
-        // 会只保留两块分片备份数据
-        if(slice.length > 3) {
-            var deletedStr = slice.shift();
-            deleteCharCount += deletedStr.length
-        }
+        chunk = chunk.toString()
         slice.push(chunk)
         spliceCount++
+        var firstSliceLength = slice[0].length
         if (spliceCount % 2000 == 0) {
             logger('当前已解析的文件片数： ' + spliceCount)
         }
+
+        // 循环判断当前缓存片数，已删除字符位置，tu前置坐标的关系，保证缓存字符串最短最小
+        while (tmpTU.segStart > deleteCharCount + slice[0].length) {
+            deleteCharCount += slice[0].length
+            slice.shift();
+        }
+        cacheStr = slice.join('')
     })
     .pipe(saxStream)
 
@@ -287,7 +296,6 @@ module.exports.countTU = function (options) {
         time: 0,
         msg: null
     }
-    console.log(__dirname)
     if (!fs.existsSync(options.srcFilePath)) {
         returnRes.msg = '文件不存在'
         deferred.resolve(returnRes);
@@ -361,7 +369,6 @@ function getIntent(level) {
 }
 
 /**
- * 
  * @param {*文件存储路劲} url 
  * @param {*文件存储内容} content 
  * @param {*是否直接写入新的文件，避免原来同名的文件已存在} directWrite 
