@@ -1,6 +1,6 @@
 {
   "name": "tmx-tools",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "tmx tools collection, like split tmx into files, or count how many tus in the file and so on.",
   "repository": {
     "type": "git",

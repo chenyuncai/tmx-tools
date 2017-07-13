@@ -235,7 +235,7 @@ module.exports.split = function (options) {
     function getDestFilePath(index) {
         var basename = path.basename(splitOptions.currentFileName)
         var fileNameWithoutExt = basename.substring(0, basename.lastIndexOf(path.extname(basename)))
-        var newNameWithIndexBeforeExt = fileNameWithoutExt + '('+index+')' + path.extname(basename)
+        var newNameWithIndexBeforeExt = fileNameWithoutExt + '_' +index + path.extname(basename)
         return path.normalize(path.join(splitOptions.savePath, newNameWithIndexBeforeExt))
     }
 
@@ -254,9 +254,10 @@ module.exports.split = function (options) {
         highWaterMark: chunkSize
         // encoding: 'UTF-8'
     })
-    .pipe(utf8())
+    .pipe(utf8({ confidence: 90, detectSize: 65535 * 5 }))
     .on('data', function(chunk) {
-        chunk = chunk.toString()
+        chunk = chunk.toString('utf8')
+        console.log(chunk)
         slice.push(chunk)
         spliceCount++
         var firstSliceLength = slice[0].length
@@ -328,7 +329,7 @@ module.exports.countTU = function (options) {
     fs.createReadStream(options.srcFilePath, { 
         // encoding: 'UTF-8'
     })
-    .pipe(utf8())
+    .pipe(utf8({ confidence: 90, detectSize: 65535 * 5 }))
     .pipe(saxStream)
 
     return deferred.promise;
@@ -375,7 +376,6 @@ function writeToFile(url, content, directWrite, isLast) {
         if (!tuCacheMap[url]) {
             tuCacheMap[url] = []
         }
-
         tuCacheMap[url].push(content)
 
         if ( tuCacheMap[url].length > cacheSize || isLast) {
